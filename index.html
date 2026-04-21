@@ -179,23 +179,33 @@
                 if (p instanceof Promise) {
                     p.then(() => { 
                         audio.pause(); 
+                        audio.volume = 1; // 停止後重置音量，解決手機端可能卡在靜音的問題
                         audioPromises.delete(audio); 
-                    }).catch(() => {});
-                } else { audio.pause(); }
+                    }).catch(() => {
+                        audio.pause();
+                        audio.volume = 1;
+                    });
+                } else { 
+                    audio.pause(); 
+                    audio.volume = 1;
+                }
             }
 
             function audioFadeIn(audio, durationMs) {
-                audio.volume = 0;
+                // 手機端 volume 可能是唯讀，若無法設定則直接播放
+                try { audio.volume = 0; } catch(e) {}
                 const step = 0.05;
                 const intervalTime = durationMs * step;
                 clearInterval(fadeInInterval);
                 fadeInInterval = setInterval(() => {
-                    if (audio.volume < 1 - step) {
-                        audio.volume += step;
-                    } else {
-                        audio.volume = 1;
-                        clearInterval(fadeInInterval);
-                    }
+                    try {
+                        if (audio.volume < 1 - step) {
+                            audio.volume += step;
+                        } else {
+                            audio.volume = 1;
+                            clearInterval(fadeInInterval);
+                        }
+                    } catch(e) { clearInterval(fadeInInterval); }
                 }, intervalTime);
             }
 
@@ -204,11 +214,16 @@
                 const intervalTime = durationMs * step;
                 clearInterval(fadeInterval);
                 fadeInterval = setInterval(() => {
-                    if (audio.volume > step) {
-                        audio.volume -= step;
-                    } else {
-                        audio.volume = 0;
-                        clearInterval(fadeInterval);
+                    try {
+                        if (audio.volume > step) {
+                            audio.volume -= step;
+                        } else {
+                            audio.volume = 0;
+                            clearInterval(fadeInterval);
+                            safePause(audio);
+                        }
+                    } catch(e) { 
+                        clearInterval(fadeInterval); 
                         safePause(audio);
                     }
                 }, intervalTime);
@@ -219,7 +234,6 @@
                 clearInterval(fadeInInterval);
                 allAudios.forEach(a => {
                     safePause(a);
-                    a.volume = 1;
                 });
                 ['gif-cat', 'gif-bird', 'gif-turtle', 'gif-rabbit'].forEach(id => {
                     const el = document.getElementById(id);
@@ -247,13 +261,10 @@
                 const initAudio = document.getElementById(c.init);
                 safePlay(initAudio);
 
-                // 動態計算音訊播到一半的時間點
                 const waitTime = initAudio.duration ? (initAudio.duration / 2) * 1000 : 500;
 
                 timerStart = setTimeout(() => {
                     const gifEl = document.getElementById(c.gif);
-                    
-                    // 已移除強制重置 src 網址的邏輯，以提升圖片出現的即時性
                     gifEl.style.display = 'block';
                     gifEl.classList.add(type === 'cat' ? 'running-animation' : 'center-animation');
                     darkOverlay.classList.remove('opacity-0');
@@ -263,7 +274,7 @@
                         const bgAudio = document.getElementById(c.bg);
                         if (type === 'rabbit') {
                             bgAudio.currentTime = 0;
-                            bgAudio.volume = 0;
+                            try { bgAudio.volume = 0; } catch(e) {}
                             bgAudio.play().catch(() => {});
                             audioFadeIn(bgAudio, 1000);
                         } else {
@@ -277,8 +288,10 @@
                         }, c.dur - 1000);
                     }
 
+                    // 強制結束計時器：確保手機端音訊無論淡出是否成功都會停止
                     timerInteraction = setTimeout(() => {
-                        if(c.bg && type !== 'turtle' && type !== 'rabbit') safePause(document.getElementById(c.bg));
+                        if(c.bg) safePause(document.getElementById(c.bg));
+                        
                         gifEl.style.display = 'none';
                         
                         const textDelay = (type === 'rabbit') ? 1000 : (type === 'turtle' ? 500 : (type === 'bird' ? 200 : 0));
