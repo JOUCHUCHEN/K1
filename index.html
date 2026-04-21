@@ -126,9 +126,48 @@
             const audioBirdBg = document.getElementById('bird-background-audio');
             const audioBirdPron = document.getElementById('bird-pron-audio');
 
+            const allAudios = [audioCatMeow, audioCatChase, audioCatPron, audioBirdInit, audioBirdBg, audioBirdPron];
+            let isAudioUnlocked = false;
+
             let timerInteraction;
             let timerCleanup;
             let timerStart;
+
+            // 用於追蹤 play() 的 Promise，避免中斷錯誤
+            let catChasePromise = null;
+            let birdBgPromise = null;
+
+            // 手機版音效解鎖：改進解鎖邏輯，只解鎖一次且正確處理 Promise
+            async function unlockAudio() {
+                if (isAudioUnlocked) return;
+                isAudioUnlocked = true;
+                
+                for (const audio of allAudios) {
+                    try {
+                        // 靜音播放後暫停
+                        audio.muted = true;
+                        const p = audio.play();
+                        if (p !== undefined) {
+                            await p;
+                            audio.pause();
+                            audio.currentTime = 0;
+                        }
+                        audio.muted = false;
+                    } catch (e) {
+                        console.log("解鎖音效失敗:", e);
+                    }
+                }
+            }
+
+            function safePause(audio, promise) {
+                if (promise) {
+                    promise.then(() => {
+                        audio.pause();
+                    }).catch(() => {});
+                } else {
+                    audio.pause();
+                }
+            }
 
             function clearAllStates() {
                 clearTimeout(timerInteraction);
@@ -144,16 +183,20 @@
                 darkOverlay.classList.remove('opacity-75');
                 darkOverlay.classList.add('opacity-0');
                 
-                audioCatChase.pause();
-                audioBirdBg.pause();
+                // 使用安全暫停邏輯
+                safePause(audioCatChase, catChasePromise);
+                safePause(audioBirdBg, birdBgPromise);
+                catChasePromise = null;
+                birdBgPromise = null;
             }
 
             function startInteraction(type) {
+                unlockAudio(); 
                 clearAllStates();
 
                 if (type === 'cat') {
                     audioCatMeow.currentTime = 0;
-                    audioCatMeow.play();
+                    audioCatMeow.play().catch(() => {});
 
                     timerStart = setTimeout(() => {
                         gifCat.style.display = 'block';
@@ -162,22 +205,23 @@
                         darkOverlay.classList.add('opacity-75');
                         
                         audioCatChase.currentTime = 0;
-                        audioCatChase.play();
+                        catChasePromise = audioCatChase.play();
+                        catChasePromise.catch(() => {});
 
                         timerInteraction = setTimeout(() => {
-                            audioCatChase.pause();
+                            safePause(audioCatChase, catChasePromise);
                             gifCat.style.display = 'none';
                             wordText.innerText = "cat";
                             wordDisplay.classList.remove('hidden');
                             audioCatPron.currentTime = 0;
-                            audioCatPron.play();
+                            audioCatPron.play().catch(() => {});
                             timerCleanup = setTimeout(clearAllStates, 4500);
                         }, 6000);
                     }, 800); 
 
                 } else if (type === 'bird') {
                     audioBirdInit.currentTime = 0;
-                    audioBirdInit.play();
+                    audioBirdInit.play().catch(() => {});
 
                     timerStart = setTimeout(() => {
                         gifBird.style.display = 'block';
@@ -186,22 +230,21 @@
                         darkOverlay.classList.add('opacity-75');
 
                         audioBirdBg.currentTime = 0;
-                        audioBirdBg.play();
+                        birdBgPromise = audioBirdBg.play();
+                        birdBgPromise.catch(() => {});
 
-                        // 1. GIF 在出現 4 秒後先消失
                         timerInteraction = setTimeout(() => {
                             gifBird.style.display = 'none'; 
 
-                            // 2. 繼續讓音效播完剩下的時間 (總長 5 秒)，播完才出現文字
                             timerInteraction = setTimeout(() => {
-                                audioBirdBg.pause();
+                                safePause(audioBirdBg, birdBgPromise);
                                 wordText.innerText = "bird";
                                 wordDisplay.classList.remove('hidden');
                                 audioBirdPron.currentTime = 0;
-                                audioBirdPron.play();
+                                audioBirdPron.play().catch(() => {});
 
                                 timerCleanup = setTimeout(clearAllStates, 4500);
-                            }, 1000); // 4s + 1s = 5s
+                            }, 1000);
                         }, 4000);
                     }, 1500);
                 }
