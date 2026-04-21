@@ -127,8 +127,7 @@
             const audioBirdPron = document.getElementById('bird-pron-audio');
 
             const allAudios = [audioCatMeow, audioCatChase, audioCatPron, audioBirdInit, audioBirdBg, audioBirdPron];
-            let isAudioUnlocked = false;
-
+            
             let timerInteraction;
             let timerCleanup;
             let timerStart;
@@ -136,27 +135,14 @@
             let catChasePromise = null;
             let birdBgPromise = null;
 
-            // 背景靜默解鎖其餘音效
-            function unlockAllRemaining() {
-                if (isAudioUnlocked) return;
-                isAudioUnlocked = true;
-                allAudios.forEach(audio => {
-                    audio.muted = true;
-                    audio.play().then(() => {
-                        audio.pause();
-                        audio.currentTime = 0;
-                        audio.muted = false;
-                    }).catch(() => {
-                        audio.muted = false;
-                    });
-                });
-            }
-
+            // 用於安全暫停，處理 play() 的 Promise
             function safePause(audio, promise) {
-                if (promise) {
+                if (promise && promise instanceof Promise) {
                     promise.then(() => {
                         audio.pause();
-                    }).catch(() => {});
+                    }).catch(() => {
+                        // 忽略播放中斷錯誤
+                    });
                 } else {
                     audio.pause();
                 }
@@ -183,21 +169,24 @@
             }
 
             function startInteraction(type) {
-                // iPhone 關鍵：在點擊事件的第一個同步週期立即播放初始音效
+                // iPhone & Web 關鍵：在事件觸發的最頂端「同步」執行 play()
+                // 不進行任何 await 或延遲，確保瀏覽器授權
                 if (type === 'cat') {
                     audioCatMeow.currentTime = 0;
-                    audioCatMeow.play().catch(() => {});
+                    audioCatMeow.play().catch(e => console.log("Cat play error:", e));
+                    // 同步預載入其他音效（靜音啟動以解鎖）
+                    [audioCatChase, audioCatPron].forEach(a => { a.muted = true; a.play().then(() => { a.pause(); a.muted = false; }).catch(()=>{}); });
                 } else if (type === 'bird') {
                     audioBirdInit.currentTime = 0;
-                    audioBirdInit.play().catch(() => {});
+                    audioBirdInit.play().catch(e => console.log("Bird play error:", e));
+                    // 同步預載入其他音效（靜音啟動以解鎖）
+                    [audioBirdBg, audioBirdPron].forEach(a => { a.muted = true; a.play().then(() => { a.pause(); a.muted = false; }).catch(()=>{}); });
                 }
 
-                // 隨後才處理其他非同步解鎖與狀態清理
-                unlockAllRemaining();
+                // 清理舊有的動畫與計時器狀態
                 clearAllStates();
 
                 if (type === 'cat') {
-                    // 維持原有的延遲邏輯
                     timerStart = setTimeout(() => {
                         gifCat.style.display = 'block';
                         gifCat.classList.add('running-animation');
@@ -220,7 +209,6 @@
                     }, 800); 
 
                 } else if (type === 'bird') {
-                    // 維持原有的延遲邏輯
                     timerStart = setTimeout(() => {
                         gifBird.style.display = 'block';
                         gifBird.classList.add('bird-animation');
@@ -248,9 +236,18 @@
                 }
             }
 
-            hooksCat.forEach(hook => hook.addEventListener('click', () => startInteraction('cat')));
-            hooksBird.forEach(hook => hook.addEventListener('click', () => startInteraction('bird')));
+            // 綁定點擊事件
+            hooksCat.forEach(hook => hook.addEventListener('click', (e) => {
+                e.stopPropagation();
+                startInteraction('cat');
+            }));
+            
+            hooksBird.forEach(hook => hook.addEventListener('click', (e) => {
+                e.stopPropagation();
+                startInteraction('bird');
+            }));
 
+            // 動畫結束自動隱藏
             [gifCat, gifBird].forEach(gif => {
                 gif.addEventListener('animationend', () => {
                     gif.style.display = 'none';
