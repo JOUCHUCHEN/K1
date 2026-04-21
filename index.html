@@ -7,7 +7,7 @@
     <!-- 引入 Tailwind CSS 進行快速且美觀的排版 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* 貓咪專用：由營幕右側往左側跑動 (現在配合全版縮放) */
+        /* 貓咪專用：由營幕右側往左側跑動 */
         @keyframes runRightToLeft {
             0% { transform: translateX(100vw); }
             100% { transform: translateX(-100vw); }
@@ -19,7 +19,7 @@
             100% { opacity: 1; }
         }
 
-        /* 貓咪動畫改用 transform 以利全版控制 */
+        /* 貓咪動畫改用 transform 以利控制 */
         .running-animation {
             animation: runRightToLeft 4s linear forwards;
             display: block;
@@ -92,8 +92,8 @@
             <div id="hook-turtle2" class="absolute top-[32%] left-[73%] w-[12%] h-[15%] cursor-pointer hover:bg-white/20 rounded-full transition-all" title="點擊這隻烏龜"></div>
             <div id="hook-turtle3" class="absolute top-[32%] left-[80%] w-[10%] h-[15%] cursor-pointer hover:bg-white/20 rounded-full transition-all" title="點擊這隻烏龜"></div>
 
-            <!-- 【兔子 Hooks】 - 向左移動一個單位 (78% -> 73%) -->
-            <div id="hook-rabbit1" class="absolute top-[78%] left-[73%] w-[15%] h-[18%] cursor-pointer hover:bg-white/20 rounded-full transition-all" title="點擊這隻兔子"></div>
+            <!-- 【兔子 Hooks】 - 改為正圓形且加大，並調整位置 (left 73% -> 70% 以適應加大尺寸) -->
+            <div id="hook-rabbit1" class="absolute top-[73%] left-[70%] w-[22%] aspect-square cursor-pointer hover:bg-white/20 rounded-full transition-all" title="點擊這隻兔子"></div>
         </div>
     </div>
 
@@ -107,11 +107,11 @@
         </h2>
     </div>
 
-    <!-- GIF 動畫區 (全部調整為佔滿全版) -->
-    <img id="gif-cat" src="https://i.ibb.co/mC6F89Wt/Happy-Tom-And-Jerry-Sticker-by-Cartoon-Network-Asia.gif" class="fixed inset-0 w-full h-full object-contain z-50 pointer-events-none hidden drop-shadow-2xl">
-    <img id="gif-bird" src="https://i.ibb.co/PG85BGmL/Bird-Budgie-GIF.gif" class="fixed inset-0 w-full h-full object-contain z-50 pointer-events-none hidden drop-shadow-2xl">
-    <img id="gif-turtle" src="https://i.ibb.co/G3Thk2Pk/video-games-nintendo-GIF-1.gif" class="fixed inset-0 w-full h-full object-contain z-50 pointer-events-none hidden drop-shadow-2xl">
-    <img id="gif-rabbit" src="https://i.ibb.co/TD75ynNT/Animated-GIF.gif" class="fixed inset-0 w-full h-full object-contain z-50 pointer-events-none hidden drop-shadow-2xl">
+    <!-- GIF 動畫區 (尺寸調整為 80% 並置中) -->
+    <img id="gif-cat" src="https://i.ibb.co/mC6F89Wt/Happy-Tom-And-Jerry-Sticker-by-Cartoon-Network-Asia.gif" class="fixed top-[10%] left-[10%] w-[80%] h-[80%] object-contain z-50 pointer-events-none hidden drop-shadow-2xl">
+    <img id="gif-bird" src="https://i.ibb.co/PG85BGmL/Bird-Budgie-GIF.gif" class="fixed top-[10%] left-[10%] w-[80%] h-[80%] object-contain z-50 pointer-events-none hidden drop-shadow-2xl">
+    <img id="gif-turtle" src="https://i.ibb.co/G3Thk2Pk/video-games-nintendo-GIF-1.gif" class="fixed top-[10%] left-[10%] w-[80%] h-[80%] object-contain z-50 pointer-events-none hidden drop-shadow-2xl">
+    <img id="gif-rabbit" src="https://i.ibb.co/TD75ynNT/Animated-GIF.gif" class="fixed top-[10%] left-[10%] w-[80%] h-[80%] object-contain z-50 pointer-events-none hidden drop-shadow-2xl">
 
     <!-- 音頻資源 -->
     <audio id="silent-unlock" src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=" preload="auto"></audio>
