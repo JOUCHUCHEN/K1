@@ -133,18 +133,16 @@
             let timerCleanup;
             let timerStart;
 
-            // 用於追蹤 play() 的 Promise，避免中斷錯誤
             let catChasePromise = null;
             let birdBgPromise = null;
 
-            // 手機版音效解鎖：改進解鎖邏輯，只解鎖一次且正確處理 Promise
+            // 修正：增加 unlockAudio 的穩定性
             async function unlockAudio() {
                 if (isAudioUnlocked) return;
-                isAudioUnlocked = true;
                 
+                // 為了手機瀏覽器，必須在同一個事件循環中對每個標籤進行交互
                 for (const audio of allAudios) {
                     try {
-                        // 靜音播放後暫停
                         audio.muted = true;
                         const p = audio.play();
                         if (p !== undefined) {
@@ -154,9 +152,10 @@
                         }
                         audio.muted = false;
                     } catch (e) {
-                        console.log("解鎖音效失敗:", e);
+                        // 忽略 AbortError
                     }
                 }
+                isAudioUnlocked = true;
             }
 
             function safePause(audio, promise) {
@@ -183,15 +182,16 @@
                 darkOverlay.classList.remove('opacity-75');
                 darkOverlay.classList.add('opacity-0');
                 
-                // 使用安全暫停邏輯
                 safePause(audioCatChase, catChasePromise);
                 safePause(audioBirdBg, birdBgPromise);
                 catChasePromise = null;
                 birdBgPromise = null;
             }
 
-            function startInteraction(type) {
-                unlockAudio(); 
+            // 修正：將 startInteraction 改為 async 以確保解鎖完成
+            async function startInteraction(type) {
+                // 在開始邏輯前先等待音效解鎖完成
+                await unlockAudio(); 
                 clearAllStates();
 
                 if (type === 'cat') {
@@ -220,8 +220,12 @@
                     }, 800); 
 
                 } else if (type === 'bird') {
+                    // 修正：確保小鳥叫聲在點擊後立即觸發
                     audioBirdInit.currentTime = 0;
-                    audioBirdInit.play().catch(() => {});
+                    const initPlay = audioBirdInit.play();
+                    if (initPlay !== undefined) {
+                        initPlay.catch(e => console.log("首次播放失敗:", e));
+                    }
 
                     timerStart = setTimeout(() => {
                         gifBird.style.display = 'block';
