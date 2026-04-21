@@ -13,22 +13,21 @@
             100% { right: 100vw; }
         }
 
-        /* 小鳥專用：直接在中心點出現並停留，並在結束前 0.5 秒淡出 */
+        /* 小鳥專用：直接在中心點出現並停留 */
         @keyframes birdDirectAppear {
             0% { transform: translate(-50%, -50%); opacity: 1; }
-            90% { transform: translate(-50%, -50%); opacity: 1; } /* 在 4.5 秒時開始淡出 */
-            100% { transform: translate(-50%, -50%); opacity: 0; } /* 5 秒時完全消失 */
+            100% { transform: translate(-50%, -50%); opacity: 1; }
         }
 
         .running-animation {
             animation: runRightToLeft 4s linear forwards;
-            display: block !important;
+            display: block;
         }
 
         .bird-animation {
-            /* 持續 5 秒以匹配背景音效長度 */
-            animation: birdDirectAppear 5s linear forwards;
-            display: block !important;
+            /* 小鳥 GIF 持續時間縮短為 4 秒 */
+            animation: birdDirectAppear 4s linear forwards;
+            display: block;
         }
 
         /* 隱藏全域捲軸，避免動畫造成畫面跳動 */
@@ -65,8 +64,8 @@
             </div>
 
             <!-- 【貓咪 Hooks】 - 正圓形點擊熱區 -->
-            <div id="hook-cat1" class="absolute top-[78%] left-[10%] w-[13%] h-[17%] cursor-pointer hover:bg-white/20 rounded-full transition-all" title="點擊這隻貓"></div>
-            <div id="hook-cat2" class="absolute top-[80%] left-[24%] w-[14%] h-[16%] cursor-pointer hover:bg-white/20 rounded-full transition-all" title="點擊這隻貓"></div>
+            <div id="hook-cat1" class="absolute top-[76%] left-[10%] w-[14%] aspect-square cursor-pointer hover:bg-white/20 rounded-full transition-all flex items-center justify-center" title="點擊這隻貓"></div>
+            <div id="hook-cat2" class="absolute top-[78%] left-[23%] w-[15%] aspect-square cursor-pointer hover:bg-white/20 rounded-full transition-all flex items-center justify-center" title="點擊這隻貓"></div>
 
             <!-- 【小鳥 Hooks】 - 正圓形點擊熱區 -->
             <div id="hook-bird1" class="absolute top-[41%] left-[26%] w-[7%] h-[12%] cursor-pointer hover:bg-white/20 rounded-full transition-all" title="點擊這隻鳥"></div>
@@ -75,17 +74,17 @@
         </div>
     </div>
 
-    <!-- 視覺焦點遮罩 -->
+    <!-- 視覺焦點遮罩 (z-index 40) -->
     <div id="dark-overlay" class="fixed inset-0 bg-black opacity-0 pointer-events-none transition-opacity duration-500 z-40"></div>
 
-    <!-- 單字教學顯示區 -->
-    <div id="word-display" class="fixed inset-0 flex items-center justify-center z-50 pointer-events-none hidden">
+    <!-- 單字教學顯示區 (z-index 提高到 100 以防被遮擋) -->
+    <div id="word-display" class="fixed inset-0 flex items-center justify-center z-[100] pointer-events-none hidden">
         <h2 id="word-text" class="text-white text-8xl md:text-[12rem] font-black tracking-tighter drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] word-pop">
             cat
         </h2>
     </div>
 
-    <!-- 貓咪互動動畫 -->
+    <!-- 貓咪互動動畫 (z-index 50) -->
     <img 
         id="running-gif-cat" 
         src="https://i.ibb.co/mC6F89Wt/Happy-Tom-And-Jerry-Sticker-by-Cartoon-Network-Asia.gif" 
@@ -93,7 +92,7 @@
         style="right: -300px;"
     >
 
-    <!-- 小鳥互動動畫 - 中心顯示 -->
+    <!-- 小鳥互動動畫 - 中心顯示 (z-index 50) -->
     <img 
         id="running-gif-bird" 
         src="https://i.ibb.co/PG85BGmL/Bird-Budgie-GIF.gif" 
@@ -131,7 +130,6 @@
             let timerCleanup;
             let timerStart;
 
-            // 清除所有狀態與動畫
             function clearAllStates() {
                 clearTimeout(timerInteraction);
                 clearTimeout(timerCleanup);
@@ -150,7 +148,6 @@
                 audioBirdBg.pause();
             }
 
-            // 動物點擊互動邏輯
             function startInteraction(type) {
                 clearAllStates();
 
@@ -158,7 +155,6 @@
                     audioCatMeow.currentTime = 0;
                     audioCatMeow.play();
 
-                    // 貓咪叫聲播放一段時間後觸發 GIF
                     timerStart = setTimeout(() => {
                         gifCat.style.display = 'block';
                         gifCat.classList.add('running-animation');
@@ -170,6 +166,7 @@
 
                         timerInteraction = setTimeout(() => {
                             audioCatChase.pause();
+                            gifCat.style.display = 'none';
                             wordText.innerText = "cat";
                             wordDisplay.classList.remove('hidden');
                             audioCatPron.currentTime = 0;
@@ -182,7 +179,6 @@
                     audioBirdInit.currentTime = 0;
                     audioBirdInit.play();
 
-                    // 鳥鳴聲播放一段時間後觸發 GIF 居中出現
                     timerStart = setTimeout(() => {
                         gifBird.style.display = 'block';
                         gifBird.classList.add('bird-animation');
@@ -192,25 +188,28 @@
                         audioBirdBg.currentTime = 0;
                         audioBirdBg.play();
 
-                        // 音效持續 5 秒，GIF 會在 4.5 秒處開始淡出
+                        // 1. GIF 在出現 4 秒後先消失
                         timerInteraction = setTimeout(() => {
-                            audioBirdBg.pause();
-                            wordText.innerText = "bird";
-                            wordDisplay.classList.remove('hidden');
-                            audioBirdPron.currentTime = 0;
-                            audioBirdPron.play();
+                            gifBird.style.display = 'none'; 
 
-                            timerCleanup = setTimeout(clearAllStates, 4500);
-                        }, 5000);
+                            // 2. 繼續讓音效播完剩下的時間 (總長 5 秒)，播完才出現文字
+                            timerInteraction = setTimeout(() => {
+                                audioBirdBg.pause();
+                                wordText.innerText = "bird";
+                                wordDisplay.classList.remove('hidden');
+                                audioBirdPron.currentTime = 0;
+                                audioBirdPron.play();
+
+                                timerCleanup = setTimeout(clearAllStates, 4500);
+                            }, 1000); // 4s + 1s = 5s
+                        }, 4000);
                     }, 1500);
                 }
             }
 
-            // 綁定點擊事件
             hooksCat.forEach(hook => hook.addEventListener('click', () => startInteraction('cat')));
             hooksBird.forEach(hook => hook.addEventListener('click', () => startInteraction('bird')));
 
-            // 動畫結束自動隱藏元素
             [gifCat, gifBird].forEach(gif => {
                 gif.addEventListener('animationend', () => {
                     gif.style.display = 'none';
