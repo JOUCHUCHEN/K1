@@ -121,6 +121,9 @@
     >
 
     <!-- 音頻資源 -->
+    <!-- [空白解鎖音效] 使用 Base64 靜音 Wav -->
+    <audio id="silent-unlock" src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=" preload="auto"></audio>
+    
     <audio id="cat-chase-audio" src="https://raw.githubusercontent.com/JOUCHUCHEN/K1/main/tom_jerry-Trimmed%20by%20FlexClip.mp3" preload="auto"></audio>
     <audio id="cat-meow-audio" src="https://raw.githubusercontent.com/JOUCHUCHEN/K1/main/29-1-cat%20sounds.mp3" preload="auto"></audio>
     <audio id="cat-pron-audio" src="https://raw.githubusercontent.com/JOUCHUCHEN/K1/main/30-1-cat.mp3" preload="auto"></audio>
@@ -133,6 +136,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             const startOverlay = document.getElementById('start-overlay');
             const startBtn = document.getElementById('start-btn');
+            const silentUnlock = document.getElementById('silent-unlock');
             const darkOverlay = document.getElementById('dark-overlay');
             const wordDisplay = document.getElementById('word-display');
             const wordText = document.getElementById('word-text');
@@ -158,19 +162,11 @@
 
             // 啟動點擊邏輯
             startBtn.addEventListener('click', () => {
-                // 核心解鎖：在第一個點擊事件中靜音播放並暫停所有音效
-                allAudios.forEach(a => {
-                    const originalVol = a.volume;
-                    a.volume = 0;
-                    const p = a.play();
-                    if (p instanceof Promise) {
-                        p.then(() => {
-                            a.pause();
-                            a.currentTime = 0;
-                            a.volume = originalVol;
-                        }).catch(() => { a.volume = originalVol; });
-                    }
-                });
+                // 改進：只播放空白音效來達成解鎖授權，避免聽到其他動物叫聲
+                silentUnlock.play().catch(() => {});
+
+                // 同時對所有標籤執行一次 load() 確保它們進入預載狀態
+                allAudios.forEach(a => a.load());
 
                 // 隱藏遮罩
                 startOverlay.classList.add('opacity-0');
