@@ -19,7 +19,7 @@
             100% { opacity: 1; }
         }
 
-        /* 貓咪動畫改用 transform 以利控制 */
+        /* 動畫類別 */
         .running-animation {
             animation: runRightToLeft 4s linear forwards;
             display: block;
@@ -59,10 +59,9 @@
 </head>
 <body class="bg-black w-full h-screen overflow-hidden relative font-sans selection:bg-blue-300 m-0">
 
-    <!-- [啟動遮罩] 僅保留播放按鈕 -->
+    <!-- [啟動遮罩] -->
     <div id="start-overlay" class="fixed inset-0 z-[200] bg-black/90 flex flex-col items-center justify-center transition-opacity duration-500">
         <button id="start-btn" class="group relative flex items-center justify-center w-32 h-32 md:w-48 md:h-48 bg-white rounded-full play-pulse transition-transform active:scale-95">
-            <!-- 三角形播放圖示 -->
             <svg class="w-16 h-16 md:w-24 md:h-24 text-black translate-x-1" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M8 5v14l11-7z" />
             </svg>
@@ -78,22 +77,22 @@
                 class="block max-w-full max-h-screen object-contain pointer-events-none"
             >
             
-            <!-- 【貓咪 Hooks】 -->
-            <div id="hook-cat1" class="absolute top-[76%] left-[10%] w-[14%] aspect-square cursor-pointer hover:bg-white/20 rounded-full transition-all flex items-center justify-center" title="點擊這隻貓"></div>
-            <div id="hook-cat2" class="absolute top-[78%] left-[23%] w-[15%] aspect-square cursor-pointer hover:bg-white/20 rounded-full transition-all flex items-center justify-center" title="點擊這隻貓"></div>
+            <!-- 貓咪 Hooks -->
+            <div id="hook-cat1" class="absolute top-[76%] left-[10%] w-[14%] aspect-square cursor-pointer hover:bg-white/20 rounded-full transition-all flex items-center justify-center"></div>
+            <div id="hook-cat2" class="absolute top-[78%] left-[23%] w-[15%] aspect-square cursor-pointer hover:bg-white/20 rounded-full transition-all flex items-center justify-center"></div>
 
-            <!-- 【小鳥 Hooks】 -->
-            <div id="hook-bird1" class="absolute top-[41%] left-[26%] w-[7%] h-[12%] cursor-pointer hover:bg-white/20 rounded-full transition-all" title="點擊這隻鳥"></div>
-            <div id="hook-bird2" class="absolute top-[43%] left-[41%] w-[9%] h-[15%] cursor-pointer hover:bg-white/20 rounded-full transition-all" title="點擊這隻鳥"></div>
-            <div id="hook-bird3" class="absolute top-[62%] left-[20%] w-[8%] h-[13%] cursor-pointer hover:bg-white/20 rounded-full transition-all" title="點擊這隻鳥"></div>
+            <!-- 小鳥 Hooks -->
+            <div id="hook-bird1" class="absolute top-[41%] left-[26%] w-[7%] h-[12%] cursor-pointer hover:bg-white/20 rounded-full transition-all"></div>
+            <div id="hook-bird2" class="absolute top-[43%] left-[41%] w-[9%] h-[15%] cursor-pointer hover:bg-white/20 rounded-full transition-all"></div>
+            <div id="hook-bird3" class="absolute top-[62%] left-[20%] w-[8%] h-[13%] cursor-pointer hover:bg-white/20 rounded-full transition-all"></div>
 
-            <!-- 【烏龜 Hooks】 -->
-            <div id="hook-turtle1" class="absolute top-[30%] left-[58%] w-[8%] h-[14%] cursor-pointer hover:bg-white/20 rounded-full transition-all" title="點擊這隻烏龜"></div>
-            <div id="hook-turtle2" class="absolute top-[32%] left-[73%] w-[12%] h-[15%] cursor-pointer hover:bg-white/20 rounded-full transition-all" title="點擊這隻烏龜"></div>
-            <div id="hook-turtle3" class="absolute top-[32%] left-[80%] w-[10%] h-[15%] cursor-pointer hover:bg-white/20 rounded-full transition-all" title="點擊這隻烏龜"></div>
+            <!-- 烏龜 Hooks -->
+            <div id="hook-turtle1" class="absolute top-[30%] left-[58%] w-[8%] h-[14%] cursor-pointer hover:bg-white/20 rounded-full transition-all"></div>
+            <div id="hook-turtle2" class="absolute top-[32%] left-[73%] w-[12%] h-[15%] cursor-pointer hover:bg-white/20 rounded-full transition-all"></div>
+            <div id="hook-turtle3" class="absolute top-[32%] left-[80%] w-[10%] h-[15%] cursor-pointer hover:bg-white/20 rounded-full transition-all"></div>
 
-            <!-- 【兔子 Hooks】 - 改為正圓形且加大，並調整位置 (left 73% -> 70% 以適應加大尺寸) -->
-            <div id="hook-rabbit1" class="absolute top-[73%] left-[70%] w-[22%] aspect-square cursor-pointer hover:bg-white/20 rounded-full transition-all" title="點擊這隻兔子"></div>
+            <!-- 兔子 Hooks (圓形且加大) -->
+            <div id="hook-rabbit1" class="absolute top-[73%] left-[70%] w-[22%] aspect-square cursor-pointer hover:bg-white/20 rounded-full transition-all"></div>
         </div>
     </div>
 
@@ -107,7 +106,7 @@
         </h2>
     </div>
 
-    <!-- GIF 動畫區 (尺寸調整為 80% 並置中) -->
+    <!-- GIF 動畫區 (尺寸 80% 置中) -->
     <img id="gif-cat" src="https://i.ibb.co/mC6F89Wt/Happy-Tom-And-Jerry-Sticker-by-Cartoon-Network-Asia.gif" class="fixed top-[10%] left-[10%] w-[80%] h-[80%] object-contain z-50 pointer-events-none hidden drop-shadow-2xl">
     <img id="gif-bird" src="https://i.ibb.co/PG85BGmL/Bird-Budgie-GIF.gif" class="fixed top-[10%] left-[10%] w-[80%] h-[80%] object-contain z-50 pointer-events-none hidden drop-shadow-2xl">
     <img id="gif-turtle" src="https://i.ibb.co/G3Thk2Pk/video-games-nintendo-GIF-1.gif" class="fixed top-[10%] left-[10%] w-[80%] h-[80%] object-contain z-50 pointer-events-none hidden drop-shadow-2xl">
@@ -116,22 +115,18 @@
     <!-- 音頻資源 -->
     <audio id="silent-unlock" src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=" preload="auto"></audio>
     
-    <!-- 貓咪音效 -->
     <audio id="cat-meow" src="https://raw.githubusercontent.com/JOUCHUCHEN/K1/main/29-1-cat%20sounds.mp3" preload="auto"></audio>
     <audio id="cat-chase" src="https://raw.githubusercontent.com/JOUCHUCHEN/K1/main/tom_jerry-Trimmed%20by%20FlexClip.mp3" preload="auto"></audio>
     <audio id="cat-pron" src="https://raw.githubusercontent.com/JOUCHUCHEN/K1/main/30-1-cat.mp3" preload="auto"></audio>
 
-    <!-- 小鳥音效 -->
     <audio id="bird-init" src="https://raw.githubusercontent.com/JOUCHUCHEN/K1/main/29-2-bird%20sounds.mp3" preload="auto"></audio>
     <audio id="bird-bg" src="https://raw.githubusercontent.com/JOUCHUCHEN/K1/main/tom_jerry-Trimmed%20by%20FlexClip%20(1).mp3" preload="auto"></audio>
     <audio id="bird-pron" src="https://raw.githubusercontent.com/JOUCHUCHEN/K1/main/30-2-bird.mp3" preload="auto"></audio>
 
-    <!-- 烏龜音效 -->
     <audio id="turtle-init" src="https://raw.githubusercontent.com/JOUCHUCHEN/K1/main/29-4-turtle%20sounds.mp3" preload="auto"></audio>
     <audio id="turtle-bg" src="https://raw.githubusercontent.com/JOUCHUCHEN/K1/main/moodmode-retro-game-arcade-short-236130.mp3" preload="auto"></audio>
     <audio id="turtle-pron" src="https://raw.githubusercontent.com/JOUCHUCHEN/K1/main/30-4-turtle.mp3" preload="auto"></audio>
 
-    <!-- 兔子音效 -->
     <audio id="rabbit-init" src="https://raw.githubusercontent.com/JOUCHUCHEN/K1/main/29-3-rabbit%20sounds.mp3" preload="auto"></audio>
     <audio id="rabbit-bg" src="https://raw.githubusercontent.com/JOUCHUCHEN/K1/main/bombinsound-happy-kids-background-music-09-second-499549.mp3" preload="auto"></audio>
     <audio id="rabbit-pron" src="https://raw.githubusercontent.com/JOUCHUCHEN/K1/main/30-3-rabbit.mp3" preload="auto"></audio>
@@ -154,7 +149,6 @@
             let fadeInterval;
             let fadeInInterval;
 
-            // 啟動點擊
             startBtn.addEventListener('click', () => {
                 silentUnlock.play().catch(() => {});
                 allAudios.forEach(a => a.load());
@@ -185,7 +179,6 @@
                 } else { audio.pause(); }
             }
 
-            // 音效淡入
             function audioFadeIn(audio, durationMs) {
                 audio.volume = 0;
                 const step = 0.05;
@@ -201,7 +194,6 @@
                 }, intervalTime);
             }
 
-            // 音效淡出
             function audioFadeOut(audio, durationMs) {
                 const step = 0.05;
                 const intervalTime = durationMs * step;
@@ -240,24 +232,28 @@
             function startInteraction(type) {
                 clearAll();
                 const config = {
-                    cat: { init: 'cat-meow', bg: 'cat-chase', pron: 'cat-pron', gif: 'gif-cat', text: 'cat', wait: 800, dur: 6000 },
-                    bird: { init: 'bird-init', bg: 'bird-bg', pron: 'bird-pron', gif: 'gif-bird', text: 'bird', wait: 1500, dur: 4000 },
-                    turtle: { init: 'turtle-init', bg: 'turtle-bg', pron: 'turtle-pron', gif: 'gif-turtle', text: 'turtle', wait: 1000, dur: 5000 },
-                    rabbit: { init: 'rabbit-init', bg: 'rabbit-bg', pron: 'rabbit-pron', gif: 'gif-rabbit', text: 'rabbit', wait: 1000, dur: 5000 }
+                    cat: { init: 'cat-meow', bg: 'cat-chase', pron: 'cat-pron', gif: 'gif-cat', text: 'cat', dur: 6000 },
+                    bird: { init: 'bird-init', bg: 'bird-bg', pron: 'bird-pron', gif: 'gif-bird', text: 'bird', dur: 4000 },
+                    turtle: { init: 'turtle-init', bg: 'turtle-bg', pron: 'turtle-pron', gif: 'gif-turtle', text: 'turtle', dur: 5000 },
+                    rabbit: { init: 'rabbit-init', bg: 'rabbit-bg', pron: 'rabbit-pron', gif: 'gif-rabbit', text: 'rabbit', dur: 5000 }
                 };
                 const c = config[type];
                 
-                safePlay(document.getElementById(c.init));
+                const initAudio = document.getElementById(c.init);
+                safePlay(initAudio);
+
+                // 計算音訊播到一半的時間點 (ms)
+                // 如果 duration 尚未載入，則預設 500ms
+                const waitTime = initAudio.duration ? (initAudio.duration / 2) * 1000 : 500;
 
                 timerStart = setTimeout(() => {
                     const gifEl = document.getElementById(c.gif);
                     
-                    // 強制從頭播放 GIF
+                    // 強制重啟 GIF
                     const baseSrc = gifEl.src.split('?')[0];
                     gifEl.src = baseSrc + "?t=" + Date.now();
 
                     gifEl.style.display = 'block';
-                    // 貓咪特殊動畫處理
                     gifEl.classList.add(type === 'cat' ? 'running-animation' : 'center-animation');
                     darkOverlay.classList.remove('opacity-0');
                     darkOverlay.classList.add('opacity-75');
@@ -268,13 +264,12 @@
                             bgAudio.currentTime = 0;
                             bgAudio.volume = 0;
                             bgAudio.play().catch(() => {});
-                            audioFadeIn(bgAudio, 1000); // 1秒淡入
+                            audioFadeIn(bgAudio, 1000);
                         } else {
                             safePlay(bgAudio);
                         }
                     }
 
-                    // 如果是烏龜或兔子，在結束前 1 秒開始淡出音效
                     if ((type === 'turtle' || type === 'rabbit') && c.bg) {
                         setTimeout(() => {
                             audioFadeOut(document.getElementById(c.bg), 1000);
@@ -285,7 +280,6 @@
                         if(c.bg && type !== 'turtle' && type !== 'rabbit') safePause(document.getElementById(c.bg));
                         gifEl.style.display = 'none';
                         
-                        // 計算文字延遲時間
                         const textDelay = (type === 'rabbit') ? 1000 : (type === 'turtle' ? 500 : (type === 'bird' ? 200 : 0));
                         
                         timerInteraction = setTimeout(() => {
@@ -295,7 +289,7 @@
                             timerCleanup = setTimeout(clearAll, 4500);
                         }, textDelay);
                     }, c.dur);
-                }, c.wait);
+                }, waitTime);
             }
 
             [1, 2].forEach(i => document.getElementById(`hook-cat${i}`).onclick = () => startInteraction('cat'));
