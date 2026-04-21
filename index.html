@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>網頁互動教學 - 點擊動物</title>
+    <!-- 引入 Tailwind CSS 進行快速且美觀的排版 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 貓咪專用：由營幕右側往左側跑動 */
+        @keyframes runRightToLeft {
+            0% { right: -400px; }
+            100% { right: 100vw; }
+        }
+
+        /* 小鳥專用：直接在中心點出現並停留，並在結束前 0.5 秒淡出 */
+        @keyframes birdDirectAppear {
+            0% { transform: translate(-50%, -50%); opacity: 1; }
+            90% { transform: translate(-50%, -50%); opacity: 1; } /* 在 4.5 秒時開始淡出 */
+            100% { transform: translate(-50%, -50%); opacity: 0; } /* 5 秒時完全消失 */
+        }
+
+        .running-animation {
+            animation: runRightToLeft 4s linear forwards;
+            display: block !important;
+        }
+
+        .bird-animation {
+            /* 持續 5 秒以匹配背景音效長度 */
+            animation: birdDirectAppear 5s linear forwards;
+            display: block !important;
+        }
+
+        /* 隱藏全域捲軸，避免動畫造成畫面跳動 */
+        body {
+            overflow: hidden;
+            margin: 0;
+        }
+
+        /* 單字跳出效果 */
+        .word-pop {
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-black w-full h-screen overflow-hidden relative font-sans selection:bg-blue-300 m-0">
+
+    <!-- 背景圖層 -->
+    <div class="w-full h-full flex items-center justify-center">
+        <div class="relative inline-block max-w-full max-h-full">
+            <img 
+                src="https://i.ibb.co/k6VYZnCc/pets.png" 
+                onerror="this.src='https://via.placeholder.com/800x600/333333/ffffff?text=Image+Link+Error'; document.getElementById('img-error').classList.remove('hidden');"
+                alt="背景寵物" 
+                class="block max-w-full max-h-screen object-contain pointer-events-none"
+            >
+            
+            <div id="img-error" class="absolute top-4 left-1/2 -translate-x-1/2 bg-red-600/90 text-white px-6 py-2 rounded-lg hidden whitespace-nowrap z-50 text-sm md:text-base shadow-lg backdrop-blur-sm pointer-events-none">
+                圖片連結可能已失效或被阻擋。
+            </div>
+
+            <!-- 【貓咪 Hooks】 - 正圓形點擊熱區 -->
+            <div id="hook-cat1" class="absolute top-[78%] left-[10%] w-[13%] h-[17%] cursor-pointer hover:bg-white/20 rounded-full transition-all" title="點擊這隻貓"></div>
+            <div id="hook-cat2" class="absolute top-[80%] left-[24%] w-[14%] h-[16%] cursor-pointer hover:bg-white/20 rounded-full transition-all" title="點擊這隻貓"></div>
+
+            <!-- 【小鳥 Hooks】 - 正圓形點擊熱區 -->
+            <div id="hook-bird1" class="absolute top-[41%] left-[26%] w-[7%] h-[12%] cursor-pointer hover:bg-white/20 rounded-full transition-all" title="點擊這隻鳥"></div>
+            <div id="hook-bird2" class="absolute top-[43%] left-[41%] w-[9%] h-[15%] cursor-pointer hover:bg-white/20 rounded-full transition-all" title="點擊這隻鳥"></div>
+            <div id="hook-bird3" class="absolute top-[62%] left-[20%] w-[8%] h-[13%] cursor-pointer hover:bg-white/20 rounded-full transition-all" title="點擊這隻鳥"></div>
+        </div>
+    </div>
+
+    <!-- 視覺焦點遮罩 -->
+    <div id="dark-overlay" class="fixed inset-0 bg-black opacity-0 pointer-events-none transition-opacity duration-500 z-40"></div>
+
+    <!-- 單字教學顯示區 -->
+    <div id="word-display" class="fixed inset-0 flex items-center justify-center z-50 pointer-events-none hidden">
+        <h2 id="word-text" class="text-white text-8xl md:text-[12rem] font-black tracking-tighter drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] word-pop">
+            cat
+        </h2>
+    </div>
+
+    <!-- 貓咪互動動畫 -->
+    <img 
+        id="running-gif-cat" 
+        src="https://i.ibb.co/mC6F89Wt/Happy-Tom-And-Jerry-Sticker-by-Cartoon-Network-Asia.gif" 
+        class="fixed bottom-10 md:bottom-20 w-48 md:w-64 z-50 pointer-events-none hidden drop-shadow-2xl"
+        style="right: -300px;"
+    >
+
+    <!-- 小鳥互動動畫 - 中心顯示 -->
+    <img 
+        id="running-gif-bird" 
+        src="https://i.ibb.co/PG85BGmL/Bird-Budgie-GIF.gif" 
+        class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 md:w-[32rem] z-50 pointer-events-none hidden drop-shadow-2xl"
+    >
+
+    <!-- 音頻資源 -->
+    <audio id="cat-chase-audio" src="https://raw.githubusercontent.com/JOUCHUCHEN/K1/main/tom_jerry-Trimmed%20by%20FlexClip.mp3" preload="auto"></audio>
+    <audio id="cat-meow-audio" src="https://raw.githubusercontent.com/JOUCHUCHEN/K1/main/29-1-cat%20sounds.mp3" preload="auto"></audio>
+    <audio id="cat-pron-audio" src="https://raw.githubusercontent.com/JOUCHUCHEN/K1/main/30-1-cat.mp3" preload="auto"></audio>
+
+    <audio id="bird-initial-audio" src="https://raw.githubusercontent.com/JOUCHUCHEN/K1/main/29-2-bird%20sounds.mp3" preload="auto"></audio>
+    <audio id="bird-background-audio" src="https://raw.githubusercontent.com/JOUCHUCHEN/K1/main/tom_jerry-Trimmed%20by%20FlexClip%20(1).mp3" preload="auto"></audio>
+    <audio id="bird-pron-audio" src="https://raw.githubusercontent.com/JOUCHUCHEN/K1/main/30-2-bird.mp3" preload="auto"></audio>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const darkOverlay = document.getElementById('dark-overlay');
+            const wordDisplay = document.getElementById('word-display');
+            const wordText = document.getElementById('word-text');
+
+            const hooksCat = [document.getElementById('hook-cat1'), document.getElementById('hook-cat2')];
+            const gifCat = document.getElementById('running-gif-cat');
+            const audioCatMeow = document.getElementById('cat-meow-audio');
+            const audioCatChase = document.getElementById('cat-chase-audio');
+            const audioCatPron = document.getElementById('cat-pron-audio');
+
+            const hooksBird = [document.getElementById('hook-bird1'), document.getElementById('hook-bird2'), document.getElementById('hook-bird3')];
+            const gifBird = document.getElementById('running-gif-bird');
+            const audioBirdInit = document.getElementById('bird-initial-audio');
+            const audioBirdBg = document.getElementById('bird-background-audio');
+            const audioBirdPron = document.getElementById('bird-pron-audio');
+
+            let timerInteraction;
+            let timerCleanup;
+            let timerStart;
+
+            // 清除所有狀態與動畫
+            function clearAllStates() {
+                clearTimeout(timerInteraction);
+                clearTimeout(timerCleanup);
+                clearTimeout(timerStart);
+                
+                [gifCat, gifBird].forEach(gif => {
+                    gif.classList.remove('running-animation', 'bird-animation');
+                    gif.style.display = 'none';
+                });
+                
+                wordDisplay.classList.add('hidden');
+                darkOverlay.classList.remove('opacity-75');
+                darkOverlay.classList.add('opacity-0');
+                
+                audioCatChase.pause();
+                audioBirdBg.pause();
+            }
+
+            // 動物點擊互動邏輯
+            function startInteraction(type) {
+                clearAllStates();
+
+                if (type === 'cat') {
+                    audioCatMeow.currentTime = 0;
+                    audioCatMeow.play();
+
+                    // 貓咪叫聲播放一段時間後觸發 GIF
+                    timerStart = setTimeout(() => {
+                        gifCat.style.display = 'block';
+                        gifCat.classList.add('running-animation');
+                        darkOverlay.classList.remove('opacity-0');
+                        darkOverlay.classList.add('opacity-75');
+                        
+                        audioCatChase.currentTime = 0;
+                        audioCatChase.play();
+
+                        timerInteraction = setTimeout(() => {
+                            audioCatChase.pause();
+                            wordText.innerText = "cat";
+                            wordDisplay.classList.remove('hidden');
+                            audioCatPron.currentTime = 0;
+                            audioCatPron.play();
+                            timerCleanup = setTimeout(clearAllStates, 4500);
+                        }, 6000);
+                    }, 800); 
+
+                } else if (type === 'bird') {
+                    audioBirdInit.currentTime = 0;
+                    audioBirdInit.play();
+
+                    // 鳥鳴聲播放一段時間後觸發 GIF 居中出現
+                    timerStart = setTimeout(() => {
+                        gifBird.style.display = 'block';
+                        gifBird.classList.add('bird-animation');
+                        darkOverlay.classList.remove('opacity-0');
+                        darkOverlay.classList.add('opacity-75');
+
+                        audioBirdBg.currentTime = 0;
+                        audioBirdBg.play();
+
+                        // 音效持續 5 秒，GIF 會在 4.5 秒處開始淡出
+                        timerInteraction = setTimeout(() => {
+                            audioBirdBg.pause();
+                            wordText.innerText = "bird";
+                            wordDisplay.classList.remove('hidden');
+                            audioBirdPron.currentTime = 0;
+                            audioBirdPron.play();
+
+                            timerCleanup = setTimeout(clearAllStates, 4500);
+                        }, 5000);
+                    }, 1500);
+                }
+            }
+
+            // 綁定點擊事件
+            hooksCat.forEach(hook => hook.addEventListener('click', () => startInteraction('cat')));
+            hooksBird.forEach(hook => hook.addEventListener('click', () => startInteraction('bird')));
+
+            // 動畫結束自動隱藏元素
+            [gifCat, gifBird].forEach(gif => {
+                gif.addEventListener('animationend', () => {
+                    gif.style.display = 'none';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
