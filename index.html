@@ -106,11 +106,14 @@
         </h2>
     </div>
 
-    <!-- GIF 動畫區 (尺寸 80% 置中) -->
+    <!-- GIF 動畫區 (貓咪維持 80%，其餘調整為 50% 並居中) -->
     <img id="gif-cat" src="https://i.ibb.co/mC6F89Wt/Happy-Tom-And-Jerry-Sticker-by-Cartoon-Network-Asia.gif" class="fixed top-[10%] left-[10%] w-[80%] h-[80%] object-contain z-50 pointer-events-none hidden drop-shadow-2xl">
-    <img id="gif-bird" src="https://i.ibb.co/PG85BGmL/Bird-Budgie-GIF.gif" class="fixed top-[10%] left-[10%] w-[80%] h-[80%] object-contain z-50 pointer-events-none hidden drop-shadow-2xl">
-    <img id="gif-turtle" src="https://i.ibb.co/G3Thk2Pk/video-games-nintendo-GIF-1.gif" class="fixed top-[10%] left-[10%] w-[80%] h-[80%] object-contain z-50 pointer-events-none hidden drop-shadow-2xl">
-    <img id="gif-rabbit" src="https://i.ibb.co/TD75ynNT/Animated-GIF.gif" class="fixed top-[10%] left-[10%] w-[80%] h-[80%] object-contain z-50 pointer-events-none hidden drop-shadow-2xl">
+    
+    <img id="gif-bird" src="https://i.ibb.co/PG85BGmL/Bird-Budgie-GIF.gif" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[50%] w-auto object-contain z-50 pointer-events-none hidden drop-shadow-2xl">
+    
+    <img id="gif-turtle" src="https://i.ibb.co/G3Thk2Pk/video-games-nintendo-GIF-1.gif" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[50%] w-auto object-contain z-50 pointer-events-none hidden drop-shadow-2xl">
+    
+    <img id="gif-rabbit" src="https://i.ibb.co/TD75ynNT/Animated-GIF.gif" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[50%] w-auto object-contain z-50 pointer-events-none hidden drop-shadow-2xl">
 
     <!-- 音頻資源 -->
     <audio id="silent-unlock" src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=" preload="auto"></audio>
@@ -242,14 +245,11 @@
                 const initAudio = document.getElementById(c.init);
                 safePlay(initAudio);
 
-                // 計算音訊播到一半的時間點 (ms)
-                // 如果 duration 尚未載入，則預設 500ms
                 const waitTime = initAudio.duration ? (initAudio.duration / 2) * 1000 : 500;
 
                 timerStart = setTimeout(() => {
                     const gifEl = document.getElementById(c.gif);
                     
-                    // 強制重啟 GIF
                     const baseSrc = gifEl.src.split('?')[0];
                     gifEl.src = baseSrc + "?t=" + Date.now();
 
