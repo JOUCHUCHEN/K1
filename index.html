@@ -247,15 +247,13 @@
                 const initAudio = document.getElementById(c.init);
                 safePlay(initAudio);
 
-                // 動態計算音訊播到一半的時間點 (若無法取得則預設 500ms)
+                // 動態計算音訊播到一半的時間點
                 const waitTime = initAudio.duration ? (initAudio.duration / 2) * 1000 : 500;
 
                 timerStart = setTimeout(() => {
                     const gifEl = document.getElementById(c.gif);
                     
-                    const baseSrc = gifEl.src.split('?')[0];
-                    gifEl.src = baseSrc + "?t=" + Date.now();
-
+                    // 已移除強制重置 src 網址的邏輯，以提升圖片出現的即時性
                     gifEl.style.display = 'block';
                     gifEl.classList.add(type === 'cat' ? 'running-animation' : 'center-animation');
                     darkOverlay.classList.remove('opacity-0');
