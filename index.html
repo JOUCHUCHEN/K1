@@ -7,18 +7,19 @@
     <!-- 引入 Tailwind CSS 進行快速且美觀的排版 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* 貓咪專用：由營幕右側往左側跑動 */
+        /* 貓咪專用：由營幕右側往左側跑動 (現在配合全版縮放) */
         @keyframes runRightToLeft {
-            0% { right: -400px; }
-            100% { right: 100vw; }
+            0% { transform: translateX(100vw); }
+            100% { transform: translateX(-100vw); }
         }
 
         /* 中心出現動畫（小鳥、烏龜、兔子） */
         @keyframes directAppear {
-            0% { transform: translate(-50%, -50%); opacity: 1; }
-            100% { transform: translate(-50%, -50%); opacity: 1; }
+            0% { opacity: 1; }
+            100% { opacity: 1; }
         }
 
+        /* 貓咪動畫改用 transform 以利全版控制 */
         .running-animation {
             animation: runRightToLeft 4s linear forwards;
             display: block;
@@ -32,6 +33,7 @@
         body {
             overflow: hidden;
             margin: 0;
+            background-color: black;
         }
 
         /* 單字跳出效果 */
@@ -71,7 +73,7 @@
     <div class="w-full h-full flex items-center justify-center">
         <div class="relative inline-block max-w-full max-h-full">
             <img 
-                src="https://i.ibb.co/k6VYZnCc/pets.png" 
+                src="https://i.ibb.co/Y7R917ZK/pets-s.png" 
                 alt="背景寵物" 
                 class="block max-w-full max-h-screen object-contain pointer-events-none"
             >
@@ -90,8 +92,8 @@
             <div id="hook-turtle2" class="absolute top-[32%] left-[73%] w-[12%] h-[15%] cursor-pointer hover:bg-white/20 rounded-full transition-all" title="點擊這隻烏龜"></div>
             <div id="hook-turtle3" class="absolute top-[32%] left-[80%] w-[10%] h-[15%] cursor-pointer hover:bg-white/20 rounded-full transition-all" title="點擊這隻烏龜"></div>
 
-            <!-- 【兔子 Hooks】 - 右下角紅圈處 -->
-            <div id="hook-rabbit1" class="absolute top-[78%] left-[78%] w-[15%] h-[18%] cursor-pointer hover:bg-white/20 rounded-full transition-all" title="點擊這隻兔子"></div>
+            <!-- 【兔子 Hooks】 - 向左移動一個單位 (78% -> 73%) -->
+            <div id="hook-rabbit1" class="absolute top-[78%] left-[73%] w-[15%] h-[18%] cursor-pointer hover:bg-white/20 rounded-full transition-all" title="點擊這隻兔子"></div>
         </div>
     </div>
 
@@ -105,11 +107,11 @@
         </h2>
     </div>
 
-    <!-- GIF 動畫區 -->
-    <img id="gif-cat" src="https://i.ibb.co/mC6F89Wt/Happy-Tom-And-Jerry-Sticker-by-Cartoon-Network-Asia.gif" class="fixed bottom-10 md:bottom-20 w-48 md:w-64 z-50 pointer-events-none hidden drop-shadow-2xl" style="right: -300px;">
-    <img id="gif-bird" src="https://i.ibb.co/PG85BGmL/Bird-Budgie-GIF.gif" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 md:w-[32rem] z-50 pointer-events-none hidden drop-shadow-2xl">
-    <img id="gif-turtle" src="https://i.ibb.co/G3Thk2Pk/video-games-nintendo-GIF-1.gif" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[24rem] md:w-[40rem] z-50 pointer-events-none hidden drop-shadow-2xl">
-    <img id="gif-rabbit" src="https://i.ibb.co/TD75ynNT/Animated-GIF.gif" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 md:w-[32rem] z-50 pointer-events-none hidden drop-shadow-2xl">
+    <!-- GIF 動畫區 (全部調整為佔滿全版) -->
+    <img id="gif-cat" src="https://i.ibb.co/mC6F89Wt/Happy-Tom-And-Jerry-Sticker-by-Cartoon-Network-Asia.gif" class="fixed inset-0 w-full h-full object-contain z-50 pointer-events-none hidden drop-shadow-2xl">
+    <img id="gif-bird" src="https://i.ibb.co/PG85BGmL/Bird-Budgie-GIF.gif" class="fixed inset-0 w-full h-full object-contain z-50 pointer-events-none hidden drop-shadow-2xl">
+    <img id="gif-turtle" src="https://i.ibb.co/G3Thk2Pk/video-games-nintendo-GIF-1.gif" class="fixed inset-0 w-full h-full object-contain z-50 pointer-events-none hidden drop-shadow-2xl">
+    <img id="gif-rabbit" src="https://i.ibb.co/TD75ynNT/Animated-GIF.gif" class="fixed inset-0 w-full h-full object-contain z-50 pointer-events-none hidden drop-shadow-2xl">
 
     <!-- 音頻資源 -->
     <audio id="silent-unlock" src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=" preload="auto"></audio>
@@ -250,11 +252,12 @@
                 timerStart = setTimeout(() => {
                     const gifEl = document.getElementById(c.gif);
                     
-                    // 強制從頭播放 GIF：透過加上隨機時間戳記來重設 src
+                    // 強制從頭播放 GIF
                     const baseSrc = gifEl.src.split('?')[0];
                     gifEl.src = baseSrc + "?t=" + Date.now();
 
                     gifEl.style.display = 'block';
+                    // 貓咪特殊動畫處理
                     gifEl.classList.add(type === 'cat' ? 'running-animation' : 'center-animation');
                     darkOverlay.classList.remove('opacity-0');
                     darkOverlay.classList.add('opacity-75');
@@ -282,7 +285,7 @@
                         if(c.bg && type !== 'turtle' && type !== 'rabbit') safePause(document.getElementById(c.bg));
                         gifEl.style.display = 'none';
                         
-                        // 計算文字延遲時間：兔子 1000ms，烏龜 500ms，小鳥 200ms
+                        // 計算文字延遲時間
                         const textDelay = (type === 'rabbit') ? 1000 : (type === 'turtle' ? 500 : (type === 'bird' ? 200 : 0));
                         
                         timerInteraction = setTimeout(() => {
