@@ -136,26 +136,20 @@
             let catChasePromise = null;
             let birdBgPromise = null;
 
-            // 修正：增加 unlockAudio 的穩定性
-            async function unlockAudio() {
+            // 背景靜默解鎖其餘音效
+            function unlockAllRemaining() {
                 if (isAudioUnlocked) return;
-                
-                // 為了手機瀏覽器，必須在同一個事件循環中對每個標籤進行交互
-                for (const audio of allAudios) {
-                    try {
-                        audio.muted = true;
-                        const p = audio.play();
-                        if (p !== undefined) {
-                            await p;
-                            audio.pause();
-                            audio.currentTime = 0;
-                        }
-                        audio.muted = false;
-                    } catch (e) {
-                        // 忽略 AbortError
-                    }
-                }
                 isAudioUnlocked = true;
+                allAudios.forEach(audio => {
+                    audio.muted = true;
+                    audio.play().then(() => {
+                        audio.pause();
+                        audio.currentTime = 0;
+                        audio.muted = false;
+                    }).catch(() => {
+                        audio.muted = false;
+                    });
+                });
             }
 
             function safePause(audio, promise) {
@@ -188,16 +182,22 @@
                 birdBgPromise = null;
             }
 
-            // 修正：將 startInteraction 改為 async 以確保解鎖完成
-            async function startInteraction(type) {
-                // 在開始邏輯前先等待音效解鎖完成
-                await unlockAudio(); 
-                clearAllStates();
-
+            function startInteraction(type) {
+                // iPhone 關鍵：在點擊事件的第一個同步週期立即播放初始音效
                 if (type === 'cat') {
                     audioCatMeow.currentTime = 0;
                     audioCatMeow.play().catch(() => {});
+                } else if (type === 'bird') {
+                    audioBirdInit.currentTime = 0;
+                    audioBirdInit.play().catch(() => {});
+                }
 
+                // 隨後才處理其他非同步解鎖與狀態清理
+                unlockAllRemaining();
+                clearAllStates();
+
+                if (type === 'cat') {
+                    // 維持原有的延遲邏輯
                     timerStart = setTimeout(() => {
                         gifCat.style.display = 'block';
                         gifCat.classList.add('running-animation');
@@ -220,13 +220,7 @@
                     }, 800); 
 
                 } else if (type === 'bird') {
-                    // 修正：確保小鳥叫聲在點擊後立即觸發
-                    audioBirdInit.currentTime = 0;
-                    const initPlay = audioBirdInit.play();
-                    if (initPlay !== undefined) {
-                        initPlay.catch(e => console.log("首次播放失敗:", e));
-                    }
-
+                    // 維持原有的延遲邏輯
                     timerStart = setTimeout(() => {
                         gifBird.style.display = 'block';
                         gifBird.classList.add('bird-animation');
