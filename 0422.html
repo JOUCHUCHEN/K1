@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>網頁互動教學 - 點擊動物</title>
+    <!-- 引入 Tailwind CSS 進行快速且美觀的排版 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 貓咪專用：由營幕右側往左側跑動 */
+        @keyframes runRightToLeft {
+            0% { transform: translateX(100vw); }
+            100% { transform: translateX(-100vw); }
+        }
+
+        /* 中心出現動畫（小鳥、烏龜、兔子） */
+        @keyframes directAppear {
+            0% { opacity: 1; }
+            100% { opacity: 1; }
+        }
+
+        /* 動畫類別 */
+        .running-animation {
+            animation: runRightToLeft 4s linear forwards;
+            display: block;
+        }
+
+        .center-animation {
+            animation: directAppear 4s linear forwards;
+            display: block;
+        }
+
+        body {
+            overflow: hidden;
+            margin: 0;
+            background-color: black;
+        }
+
+        /* 單字跳出效果 */
+        .word-pop {
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* 啟動按鈕微動畫 */
+        .play-pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(255, 255, 255, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+        }
+    </style>
+</head>
+<body class="bg-black w-full h-screen overflow-hidden relative font-sans selection:bg-blue-300 m-0">
+
+    <!-- [啟動遮罩] -->
+    <div id="start-overlay" class="fixed inset-0 z-[200] bg-black/90 flex flex-col items-center justify-center transition-opacity duration-500">
+        <button id="start-btn" class="group relative flex items-center justify-center w-32 h-32 md:w-48 md:h-48 bg-white rounded-full play-pulse transition-transform active:scale-95">
+            <svg class="w-16 h-16 md:w-24 md:h-24 text-black translate-x-1" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z" />
+            </svg>
+        </button>
+    </div>
+
+    <!-- 背景圖層 -->
+    <div class="w-full h-full flex items-center justify-center">
+        <div class="relative inline-block max-w-full max-h-full">
+            <img 
+                src="https://i.ibb.co/Y7R917ZK/pets-s.png" 
+                alt="背景寵物" 
+                class="block max-w-full max-h-screen object-contain pointer-events-none"
+            >
+            
+            <!-- 貓咪 Hooks -->
+            <div id="hook-cat1" class="absolute top-[76%] left-[10%] w-[14%] aspect-square cursor-pointer hover:bg-white/20 rounded-full transition-all flex items-center justify-center"></div>
+            <div id="hook-cat2" class="absolute top-[78%] left-[23%] w-[15%] aspect-square cursor-pointer hover:bg-white/20 rounded-full transition-all flex items-center justify-center"></div>
+
+            <!-- 小鳥 Hooks -->
+            <div id="hook-bird1" class="absolute top-[41%] left-[26%] w-[7%] h-[12%] cursor-pointer hover:bg-white/20 rounded-full transition-all"></div>
+            <div id="hook-bird2" class="absolute top-[43%] left-[41%] w-[9%] h-[15%] cursor-pointer hover:bg-white/20 rounded-full transition-all"></div>
+            <div id="hook-bird3" class="absolute top-[62%] left-[20%] w-[8%] h-[13%] cursor-pointer hover:bg-white/20 rounded-full transition-all"></div>
+
+            <!-- 烏龜 Hooks -->
+            <div id="hook-turtle1" class="absolute top-[30%] left-[58%] w-[8%] h-[14%] cursor-pointer hover:bg-white/20 rounded-full transition-all"></div>
+            <div id="hook-turtle2" class="absolute top-[32%] left-[73%] w-[12%] h-[15%] cursor-pointer hover:bg-white/20 rounded-full transition-all"></div>
+            <div id="hook-turtle3" class="absolute top-[32%] left-[80%] w-[10%] h-[15%] cursor-pointer hover:bg-white/20 rounded-full transition-all"></div>
+
+            <!-- 兔子 Hooks -->
+            <div id="hook-rabbit1" class="absolute top-[73%] left-[70%] w-[22%] aspect-square cursor-pointer hover:bg-white/20 rounded-full transition-all"></div>
+        </div>
+    </div>
+
+    <!-- 視覺焦點遮罩 -->
+    <div id="dark-overlay" class="fixed inset-0 bg-black opacity-0 pointer-events-none transition-opacity duration-500 z-40"></div>
+
+    <!-- 單字教學顯示區 -->
+    <div id="word-display" class="fixed inset-0 flex items-center justify-center z-[100] pointer-events-none hidden">
+        <h2 id="word-text" class="text-white text-8xl md:text-[12rem] font-black tracking-tighter drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] word-pop">
+            cat
+        </h2>
+    </div>
+
+    <!-- GIF 動畫區 -->
+    <!-- 貓咪維持 80% 尺寸 -->
+    <img id="gif-cat" src="https://i.ibb.co/mC6F89Wt/Happy-Tom-And-Jerry-Sticker-by-Cartoon-Network-Asia.gif" class="fixed top-[10%] left-[10%] w-[80%] h-[80%] object-contain z-50 pointer-events-none hidden drop-shadow-2xl">
+    
+    <!-- 其餘動物高度設為畫面的 50% 且置中 -->
+    <img id="gif-bird" src="https://i.ibb.co/PG85BGmL/Bird-Budgie-GIF.gif" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[50%] w-auto object-contain z-50 pointer-events-none hidden drop-shadow-2xl">
+    
+    <img id="gif-turtle" src="https://i.ibb.co/G3Thk2Pk/video-games-nintendo-GIF-1.gif" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[50%] w-auto object-contain z-50 pointer-events-none hidden drop-shadow-2xl">
+    
+    <img id="gif-rabbit" src="https://i.ibb.co/TD75ynNT/Animated-GIF.gif" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[50%] w-auto object-contain z-50 pointer-events-none hidden drop-shadow-2xl">
+
+    <!-- 音頻資源 -->
+    <audio id="silent-unlock" src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=" preload="auto"></audio>
+    
+    <audio id="cat-meow" src="https://raw.githubusercontent.com/JOUCHUCHEN/K1/main/29-1-cat%20sounds.mp3" preload="auto"></audio>
+    <audio id="cat-chase" src="https://raw.githubusercontent.com/JOUCHUCHEN/K1/main/tom_jerry-Trimmed%20by%20FlexClip.mp3" preload="auto"></audio>
+    <audio id="cat-pron" src="https://raw.githubusercontent.com/JOUCHUCHEN/K1/main/30-1-cat.mp3" preload="auto"></audio>
+
+    <audio id="bird-init" src="https://raw.githubusercontent.com/JOUCHUCHEN/K1/main/29-2-bird%20sounds.mp3" preload="auto"></audio>
+    <audio id="bird-bg" src="https://raw.githubusercontent.com/JOUCHUCHEN/K1/main/tom_jerry-Trimmed%20by%20FlexClip%20(1).mp3" preload="auto"></audio>
+    <audio id="bird-pron" src="https://raw.githubusercontent.com/JOUCHUCHEN/K1/main/30-2-bird.mp3" preload="auto"></audio>
+
+    <audio id="turtle-init" src="https://raw.githubusercontent.com/JOUCHUCHEN/K1/main/29-4-turtle%20sounds.mp3" preload="auto"></audio>
+    <audio id="turtle-bg" src="https://raw.githubusercontent.com/JOUCHUCHEN/K1/main/moodmode-retro-game-arcade-short-236130.mp3" preload="auto"></audio>
+    <audio id="turtle-pron" src="https://raw.githubusercontent.com/JOUCHUCHEN/K1/main/30-4-turtle.mp3" preload="auto"></audio>
+
+    <audio id="rabbit-init" src="https://raw.githubusercontent.com/JOUCHUCHEN/K1/main/29-3-rabbit%20sounds.mp3" preload="auto"></audio>
+    <audio id="rabbit-bg" src="https://raw.githubusercontent.com/JOUCHUCHEN/K1/main/bombinsound-happy-kids-background-music-09-second-499549.mp3" preload="auto"></audio>
+    <audio id="rabbit-pron" src="https://raw.githubusercontent.com/JOUCHUCHEN/K1/main/30-3-rabbit.mp3" preload="auto"></audio>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const startOverlay = document.getElementById('start-overlay');
+            const startBtn = document.getElementById('start-btn');
+            const silentUnlock = document.getElementById('silent-unlock');
+            const darkOverlay = document.getElementById('dark-overlay');
+            const wordDisplay = document.getElementById('word-display');
+            const wordText = document.getElementById('word-text');
+
+            const allAudios = Array.from(document.querySelectorAll('audio'));
+            const audioPromises = new Map();
+
+            let timerInteraction;
+            let timerCleanup;
+            let timerStart;
+            let fadeInterval;
+            let fadeInInterval;
+
+            startBtn.addEventListener('click', () => {
+                silentUnlock.play().catch(() => {});
+                allAudios.forEach(a => a.load());
+                startOverlay.classList.add('opacity-0');
+                setTimeout(() => { startOverlay.style.display = 'none'; }, 500);
+            });
+
+            function safePlay(audio) {
+                if (!audio) return;
+                audio.currentTime = 0;
+                audio.volume = 1;
+                const p = audio.play();
+                if (p instanceof Promise) {
+                    audioPromises.set(audio, p);
+                    p.catch(() => {});
+                }
+                return p;
+            }
+
+            function safePause(audio) {
+                if (!audio) return;
+                const p = audioPromises.get(audio);
+                if (p instanceof Promise) {
+                    p.then(() => { 
+                        audio.pause(); 
+                        audio.volume = 1; // 停止後重置音量，解決手機端可能卡在靜音的問題
+                        audioPromises.delete(audio); 
+                    }).catch(() => {
+                        audio.pause();
+                        audio.volume = 1;
+                    });
+                } else { 
+                    audio.pause(); 
+                    audio.volume = 1;
+                }
+            }
+
+            function audioFadeIn(audio, durationMs) {
+                // 手機端 volume 可能是唯讀，若無法設定則直接播放
+                try { audio.volume = 0; } catch(e) {}
+                const step = 0.05;
+                const intervalTime = durationMs * step;
+                clearInterval(fadeInInterval);
+                fadeInInterval = setInterval(() => {
+                    try {
+                        if (audio.volume < 1 - step) {
+                            audio.volume += step;
+                        } else {
+                            audio.volume = 1;
+                            clearInterval(fadeInInterval);
+                        }
+                    } catch(e) { clearInterval(fadeInInterval); }
+                }, intervalTime);
+            }
+
+            function audioFadeOut(audio, durationMs) {
+                const step = 0.05;
+                const intervalTime = durationMs * step;
+                clearInterval(fadeInterval);
+                fadeInterval = setInterval(() => {
+                    try {
+                        if (audio.volume > step) {
+                            audio.volume -= step;
+                        } else {
+                            audio.volume = 0;
+                            clearInterval(fadeInterval);
+                            safePause(audio);
+                        }
+                    } catch(e) { 
+                        clearInterval(fadeInterval); 
+                        safePause(audio);
+                    }
+                }, intervalTime);
+            }
+
+            function clearAll() {
+                clearInterval(fadeInterval);
+                clearInterval(fadeInInterval);
+                allAudios.forEach(a => {
+                    safePause(a);
+                });
+                ['gif-cat', 'gif-bird', 'gif-turtle', 'gif-rabbit'].forEach(id => {
+                    const el = document.getElementById(id);
+                    el.classList.remove('running-animation', 'center-animation');
+                    el.style.display = 'none';
+                });
+                wordDisplay.classList.add('hidden');
+                darkOverlay.classList.remove('opacity-75');
+                darkOverlay.classList.add('opacity-0');
+                clearTimeout(timerInteraction); 
+                clearTimeout(timerCleanup); 
+                clearTimeout(timerStart);
+            }
+
+            function startInteraction(type) {
+                clearAll();
+                const config = {
+                    cat: { init: 'cat-meow', bg: 'cat-chase', pron: 'cat-pron', gif: 'gif-cat', text: 'cat', dur: 6000 },
+                    bird: { init: 'bird-init', bg: 'bird-bg', pron: 'bird-pron', gif: 'gif-bird', text: 'bird', dur: 4000 },
+                    turtle: { init: 'turtle-init', bg: 'turtle-bg', pron: 'turtle-pron', gif: 'gif-turtle', text: 'turtle', dur: 5000 },
+                    rabbit: { init: 'rabbit-init', bg: 'rabbit-bg', pron: 'rabbit-pron', gif: 'gif-rabbit', text: 'rabbit', dur: 5000 }
+                };
+                const c = config[type];
+                
+                const initAudio = document.getElementById(c.init);
+                safePlay(initAudio);
+
+                const waitTime = initAudio.duration ? (initAudio.duration / 2) * 1000 : 500;
+
+                timerStart = setTimeout(() => {
+                    const gifEl = document.getElementById(c.gif);
+                    gifEl.style.display = 'block';
+                    gifEl.classList.add(type === 'cat' ? 'running-animation' : 'center-animation');
+                    darkOverlay.classList.remove('opacity-0');
+                    darkOverlay.classList.add('opacity-75');
+                    
+                    if(c.bg) {
+                        const bgAudio = document.getElementById(c.bg);
+                        if (type === 'rabbit') {
+                            bgAudio.currentTime = 0;
+                            try { bgAudio.volume = 0; } catch(e) {}
+                            bgAudio.play().catch(() => {});
+                            audioFadeIn(bgAudio, 1000);
+                        } else {
+                            safePlay(bgAudio);
+                        }
+                    }
+
+                    if ((type === 'turtle' || type === 'rabbit') && c.bg) {
+                        setTimeout(() => {
+                            audioFadeOut(document.getElementById(c.bg), 1000);
+                        }, c.dur - 1000);
+                    }
+
+                    // 強制結束計時器：確保手機端音訊無論淡出是否成功都會停止
+                    timerInteraction = setTimeout(() => {
+                        if(c.bg) safePause(document.getElementById(c.bg));
+                        
+                        gifEl.style.display = 'none';
+                        
+                        const textDelay = (type === 'rabbit') ? 1000 : (type === 'turtle' ? 500 : (type === 'bird' ? 200 : 0));
+                        
+                        timerInteraction = setTimeout(() => {
+                            wordText.innerText = c.text;
+                            wordDisplay.classList.remove('hidden');
+                            safePlay(document.getElementById(c.pron));
+                            timerCleanup = setTimeout(clearAll, 4500);
+                        }, textDelay);
+                    }, c.dur);
+                }, waitTime);
+            }
+
+            [1, 2].forEach(i => document.getElementById(`hook-cat${i}`).onclick = () => startInteraction('cat'));
+            [1, 2, 3].forEach(i => document.getElementById(`hook-bird${i}`).onclick = () => startInteraction('bird'));
+            [1, 2, 3].forEach(i => document.getElementById(`hook-turtle${i}`).onclick = () => startInteraction('turtle'));
+            document.getElementById('hook-rabbit1').onclick = () => startInteraction('rabbit');
+        });
+    </script>
+</body>
+</html>
